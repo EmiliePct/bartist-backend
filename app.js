@@ -1,0 +1,43 @@
+require('dotenv').config();
+
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+
+require("./config/connection")
+
+var indexRouter = require('./routes/index');
+var artistsRouter = require('./routes/artistRoute');
+var venuesRouter = require('./routes/venueRoute');
+var eventsRouter = require('./routes/eventRoute');
+var bookingsRouter = require('./routes/bookingRoute');
+
+var app = express();
+
+const cors = require('cors');
+app.use(cors());
+
+const fileUpload = require('express-fileupload');
+// Middleware express-fileupload
+app.use(fileUpload({
+    useTempFiles: true,
+    tempFileDir: './tmp/', // Chemin corrigé vers le répertoire temporaire
+}));
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+// Routes générales, renvois vers des fichiers routes spécifiques
+app.use('/', indexRouter);
+app.use('/artists', artistsRouter);
+app.use('/venues', venuesRouter);
+app.use('/events', eventsRouter);
+app.use('/bookings', bookingsRouter);
+
+
+module.exports = app;
