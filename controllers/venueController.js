@@ -27,8 +27,8 @@ exports.signUpVenue = async (req, res) => {
         token: uid2(32),
       });
 
-      newVenue.save().then(newDoc => {
-        res.json({ result: true, token: newDoc.token });
+      newVenue.save().then(newVenueSaved => {
+        res.json({ result: true, token: newVenueSaved.token });
       });
     } else {
       // email already exists in database
@@ -45,9 +45,9 @@ exports.signInVenue = async (req, res) => {
   }
 
   // Check if the email has not already been registered
-  Venue.findOne({ email: req.body.email }).then(data => {
+  Venue.findOne({ email: req.body.email }).then(venue => {
     if (data && bcrypt.compareSync(req.body.password, data.password)) {
-      res.json({ result: true, token: data.token });
+      res.json({ result: true, token: venue.token });
     } else {
       res.json({ result: false, error: 'email not found or wrong password' });
     }
@@ -90,9 +90,9 @@ exports.getVenueById = (req, res) => {
   }
 
   Venue.findOne({ _id: id })
-    .then(data => {
-      if (data) {
-        res.status(200).json({ result: true, venue: data });
+    .then(venue => {
+      if (venue) {
+        res.status(200).json({ result: true, venue });
       } else {
         res.status(404).json({ result: false, message: 'venue not found' });
       }
@@ -107,9 +107,9 @@ exports.getVenueById = (req, res) => {
 
 exports.getVenueByToken = (req, res) => {
   try{
-    Venue.findOne({ token: req.params.token }).then(data => {
-      if (data) {
-        res.status(200).json({ result: true, venue: data });
+    Venue.findOne({ token: req.params.token }).then(venue => {
+      if (venue) {
+        res.status(200).json({ result: true, venue });
       } else {
         res.status(404).json({ result: false, message: 'User not found' });
       }

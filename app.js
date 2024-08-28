@@ -12,6 +12,7 @@ var artistsRouter = require('./routes/artistRoute');
 var venuesRouter = require('./routes/venueRoute');
 var eventsRouter = require('./routes/eventRoute');
 var bookingsRouter = require('./routes/bookingRoute');
+var mediasRouter = require('./routes/cloudinaryRoute');
 
 var app = express();
 
@@ -34,6 +35,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes générales, renvois vers des fichiers routes spécifiques
 app.use('/', indexRouter);
+app.use('/medias', mediasRouter);
 app.use('/artists', artistsRouter);
 app.use('/venues', venuesRouter);
 app.use('/events', eventsRouter);

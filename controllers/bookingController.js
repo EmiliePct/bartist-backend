@@ -26,19 +26,20 @@ exports.createBooking = async (req, res) => {
       res.status(307).json({ result: false, error: "Missing or empty fields" });
       return;
     }
+    //On vérifie que le token est valide, quel que soit le type de user
     if (req.body.isVenue){
-      Venue.findOne({token: req.body.token}).then(data => {
+      Venue.findOne({ token: req.body.token }).then(data => {
         if(!data){
-          res.status(305).json({result: false, message: "not allowed venue user"})
+          res.status(305).json({ result: false, message: "Not allowed venue user" })
         }
       })
-    }else {
+    } else {
       Artist.findOne({token: req.body.token}).then(data => {
         if(!data){
-          res.status(305).json({result: false, message: "not allowed artist user"})
+          res.status(305).json({ result: false, message: "Not allowed artist user" })
         }
       })
-    }
+    };
     
     const newBooking = new Booking({
       //je crée un objet booking
@@ -77,9 +78,9 @@ exports.displayAllBookings = async (req, res) => {
     Venue.findOne({ token: req.body.token }).then((dataVenue) => {
       if (dataVenue) {
         Booking.find({ venue: dataVenue._id }) // on recherche tous les bookings qui ont l'ID de l'établissement en clé étrangère
-          .then((dataBookings) => {
-            if (dataBookings) {
-              res.json({ result: true, dataBookings });
+          .then((bookings) => {
+            if (bookings) {
+              res.json({ result: true, bookings });
             } else {
               res.json({ result: false, error: "No bookings found" });
             }
@@ -93,9 +94,9 @@ exports.displayAllBookings = async (req, res) => {
     Artist.findOne({ token: req.body.token }).then((dataArtist) => {
       if (dataArtist) {
         Booking.find({ artist: dataArtist._id }) // on recherche tous les bookings qui ont l'ID de l'artiste en clé étrangère
-          .then((dataBookings) => {
-            if (dataBookings) {
-              res.json({ result: true, dataBookings });
+          .then((bookings) => {
+            if (bookings) {
+              res.json({ result: true, bookings });
             } else {
               res.json({ result: false, error: "No bookings found" });
             }
@@ -109,10 +110,10 @@ exports.displayAllBookings = async (req, res) => {
 
 // Pour accepter ou refuser un booking en changeant son statut
 exports.updateBookingStatus = async (req, res) => {
-  Booking.updateOne({ _id: req.body._id }, { status: req.body.status }).then(
-    (dataBooking) => {
-      if (dataBooking) {
-        res.json({ result: true, dataBooking });
+  Booking.updateOne({ _id: req.body._id }, { status: req.body.status })
+    .then((booking) => {
+      if (booking) {
+        res.json({ result: true, booking });
       } else {
         res.json({ result: false, error: "Booking not found" });
       }
@@ -125,7 +126,7 @@ exports.getArtistBookedByEventId = async (req, res) => {
   try {
     if (req.params.id) {
       Booking.find({ event: req.params.id })
-        .populate('artist', 'name')  // Spécifiez que vous voulez seulement le nom de l'artiste
+        .populate('artist', 'name')  // Spécifier que vous voulez seulement le nom de l'artiste
         .then(bookings => {
           if (bookings.length === 0) {
             res.status(404).json({ result: false, message: "No Booking Linked to Event" });

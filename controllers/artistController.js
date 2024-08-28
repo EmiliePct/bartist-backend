@@ -26,8 +26,8 @@ exports.signUpArtist = async (req, res) => {
           password: hash,
           token: uid2(32),
         });
-        newArtist.save().then((newDoc) => {
-          res.json({ result: true, token: newDoc.token });
+        newArtist.save().then((newArtistSaved) => {
+          res.json({ result: true, artist: newArtistSaved.token });
         });
       } else {
         // le compte existe déjà en BDD
@@ -74,13 +74,7 @@ exports.createProfileArtist = async (req, res) => {
         picture: req.body.picture,
         genres: req.body.genres,
         medias: req.body.medias,
-        socials: {
-          youtube: req.body.youtube,
-          soundcloud: req.body.soundcloud,
-          facebook: req.body.facebook,
-          deezer: req.body.deezer,
-          spotify: req.body.spotify,
-        },
+        socials: req.body.socials,
       },
     }
   ).then(() => {
@@ -92,10 +86,9 @@ exports.createProfileArtist = async (req, res) => {
 // RECUPERATION INFOS DE TOUT LES ARTISTES
 exports.getArtists = (req, res) => {
   try {
-    Artist.find().then((data) => {
+    Artist.find().then((artists) => {
       if (data) {
-        console.log("Artists found:", data);
-        res.status(200).json({ result: true, artists: data });
+        res.status(200).json({ result: true, artists });
       } else {
         res.status(404).json({ result: false, message: "No artists found" });
       }
@@ -107,11 +100,11 @@ exports.getArtists = (req, res) => {
 // RECUPERATION INFOS D'UN ARTISTE
 exports.getArtist = (req, res) => {
   try {
-    Artist.findOne({ token: req.params.token }).then((data) => {
+    Artist.findOne({ token: req.params.token }).then((artist) => {
       if (data) {
-        res.status(200).json({ result: true, artist: data });
+        res.status(200).json({ result: true, artist });
       } else {
-        res.status(404).json({ result: false, error: "User not found" });
+        res.status(404).json({ result: false, error: "Artist not found" });
       }
     });
   } catch (error) {
@@ -124,17 +117,18 @@ exports.getArtistById = (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ result: false, message: "Invalid ID" });
   }
-
+  
+  // idée : faire un findById au lieu d'un findOne ?
   Artist.findOne({ _id: id })
-    .then((data) => {
-      if (data) {
-        res.status(200).json({ result: true, artist: data });
+    .then((artist) => {
+      if (artist) {
+        res.status(200).json({ result: true, artist });
       } else {
         res.status(404).json({ result: false, message: "Artist not found" });
       }
     })
     .catch((error) => {
       console.error("Error fetching artist:", error);
-      res.status(500).json({ result: false, message: "Error" });
+      res.status(500).json({ result: false, message: error.message });
     });
 };

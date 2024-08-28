@@ -53,135 +53,135 @@ exports.createEvent = async (req, res) => {
 // Fonction GET pour récupérer tout les events
 exports.getEvents = async (req, res) => {
   try{
-    Event.find().then(data => {
+    Event.find().then(events => {
       if(data){
-        res.status(200).json({result: true, events: data})
+        res.status(200).json({ result: true, events })
       }else{
-        res.status(404).json({result: false, message: "no data"})
+        res.status(404).json({ result: false, message: "no data" })
       }
   })
   }catch(err){
-    res.status(500).json({result: false, message: err.message})
+    res.status(500).json({ result: false, message: err.message})
   }
 }  
 
-// Route pour afficher event
-  exports.displayEvents = async (req, res) => { 
-    // si connecté en tant que venue
-    // if(req.body.isVenue) {
-      Venue.findOne({token: req.params.token})// cherche si token en question est présent dans Venue
-      .then(tokenVenue => {
-        if(tokenVenue){ 
-          try{
-            //Si trouvé on cherche le venue qui correspond dans la collection event
-            Event.find({ venue: tokenVenue._id }).then(dataEvent => {
-              if (dataEvent.length) { // renvoie les correspondances
-                res.json({ result: true, event: dataEvent });
-              } else {
-                res.json({ result: false, error: 'venue not found' });
-              }
-            });     
-          } catch(error){
-            console.log(error.message);
-          }
+// Route pour afficher events
+exports.displayEvents = async (req, res) => { 
+  // si connecté en tant que venue
+    Venue.findOne({ token: req.params.token })// cherche si token en question est présent dans Venue
+    .then(tokenVenue => {
+      if (tokenVenue) { 
+        try {
+          //Si trouvé on cherche le venue qui correspond dans la collection event
+          Event.find({ venue: tokenVenue._id }).then(dataEvent => {
+            if (dataEvent.length) { // renvoie les correspondances
+              res.json({ result: true, event: dataEvent });
+            } else {
+              res.json({ result: false, error: 'venue not found' });
+            }
+          });     
+        } catch(error){
+          console.log(error.message);
         }
-      });
-    };
-
-    exports.getEventById = (req, res) => {
-      const id = req.params.id;
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ result: false, message: 'Invalid ID' });
       }
-    
-      Event.findOne({ _id: id })
-        .then(data => {
-          if (data) {
-            res.status(200).json({ result: true, event: data });
-          } else {
-            res.status(404).json({ result: false, message: 'Event not found' });
-          }
-        })
-        .catch(error => {
-          console.error("Error fetching event:", error);
-          res.status(500).json({ result: false, message: 'Error' });
-        });
-    };
+    });
+};
+
+exports.getEventById = (req, res) => {
+  const id = req.params.id;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ result: false, message: 'Invalid ID' });
+  }
+
+  Event.findOne({ _id: id })
+    .then(event => {
+      if (event) {
+        res.status(200).json({ result: true, event });
+      } else {
+        res.status(404).json({ result: false, message: 'Event not found' });
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching event:", error);
+      res.status(500).json({ result: false, message: 'Error' });
+    });
+};
 
     // Obtenir tous les événements d'un établissement grâce à son token
-    exports.getEventsByVenueToken = async (req, res) => {
-      try{
-          Venue.findOne({token: req.params.token}) // on récupère l'ID de l'établissement grâce à son token
-          .then(dataVenue => {
-            if(dataVenue){
-              Event.find({venue: dataVenue._id}) // on cherche tous les événéments qui ont comme clé étrangère venue l'ID de l'établissement
-              .then(dataEvents => {
-                if(dataEvents) {
-                  res.json({ result: true, events: dataEvents })
-                } else {
-                  res.json({ result:false, error:"No events found" })
-                }
-              })
+exports.getEventsByVenueToken = async (req, res) => {
+  try{
+      Venue.findOne({token: req.params.token}) // on récupère l'ID de l'établissement grâce à son token
+      .then(dataVenue => {
+        if (dataVenue) {
+          Event.find({venue: dataVenue._id}) // on cherche tous les événéments qui ont comme clé étrangère venue l'ID de l'établissement
+          .then(events => {
+            if (events) {
+              res.json({ result: true, events })
             } else {
-                res.json({ result:false, error:"Venue not found" })
+              res.json({ result:false, error:"No events found" })
             }
-        });
-      } catch(error){
-        console.log(error.message);
-      }
-    }
+          })
+        } else {
+            res.json({ result:false, error:"Venue not found" })
+        }
+    });
+  } catch(error){
+    console.log(error.message);
+  }
+}
 
     //Route DELETE event
-    exports.deleteEvent = async (req, res) => {
-      // Ne pas passer l'id en params pour que la route fonctionnne
-          try{
-            //Si trouvé, cherche le venue qui correspond dans la collection event pour le delete
-            Event.deleteOne({ _id: req.body._id }) // La cle correspond a ce qu'on a en bdd, et le req.param fait reference a la route
-            .then(data => {
-                if (data.deletedCount > 0) { // cf doc mongoose
-                    res.json({ result:true, message:"This event has been successfully deleted" })
-                } else {
-                    res.json({ result:false, error:"Event not found" })
-                }
-            });
-          } catch(error){
-            console.log(error.message);
-          }
-    };
-    // Route update event's status
-    exports.updateEventStatus = async (req, res) => {
+exports.deleteEvent = async (req, res) => {
+  // Ne pas passer l'id en params pour que la route fonctionnne
       try{
-          Event.updateOne({_id: req.body._id}, { status: req.body.status})
-          .then(data => {
-            if(data){
-              res.json({ result:true, message:"This status has been modified" })
+        //Si trouvé, cherche le venue qui correspond dans la collection event pour le delete
+        Event.deleteOne({ _id: req.body._id }) // La cle correspond a ce qu'on a en bdd, et le req.param fait reference a la route
+        .then(data => {
+            if (data.deletedCount > 0) { // cf doc mongoose
+                res.json({ result: true, message: "This event has been successfully deleted" })
             } else {
-                res.json({ result:false, error:"Status not found" })
+                res.json({ result: false, error:"Event not found" })
             }
         });
       } catch(error){
         console.log(error.message);
       }
-    };
+};
 
-    exports.displayEventsByBooking = async (req, res) => {
-      try{
-        Artist.findOne({token: req.params.token}).then(data => {
-          console.log(data)
-          if(!data){
-            res.status(400).json({result: false, message: "Your are not a allowed user"})
-          }else{
-            Booking.find({artist: data._id}).populate('event').then(data => {
-              if(data){
-                res.status(200).json({result: true, message: "Events Booked", events: data})
-              }else{
-                res.status(402).json({result: false, message: "No Events Booked Yet"})
-              }
-            })
+    // Route update event's status
+exports.updateEventStatus = async (req, res) => {
+  try{
+      Event.updateOne({_id: req.body._id}, { status: req.body.status})
+      .then(data => {
+        if(data){
+          res.json({ result: true, message: "This status has been modified" })
+        } else {
+            res.json({ result: false, error: "Status not found" })
+        }
+    });
+  } catch(error){
+    console.log(error.message);
+  }
+};
+
+exports.displayEventsByBooking = async (req, res) => {
+  try{
+    Artist.findOne({token: req.params.token}).then(data => {
+      console.log(data)
+      if (!data) {
+        res.status(400).json({ result: false, message: "Your are not an allowed user" })
+      } else {
+        Booking.find({artist: data._id}).populate('event').then(events => {
+          if (events) {
+            res.status(200).json({ result: true, message: "Events Booked", events})
+          } else {
+            res.status(402).json({ result: false, message: "No Events Booked Yet" })
           }
         })
-      }catch(error){
-        res.status(500).json({result: false, message: "Controller Error contact with DB"})
       }
-    }
+    })
+  } catch (error) {
+    res.status(500).json({ result: false, message: "Controller Error contact with DB" })
+  }
+}
 
